@@ -35,7 +35,7 @@ To execute the script, make sure your Resolve project is opened, and launch `sou
 A settings window will open.
 
 In the top part, select the timelines you want the source sequence to be based on.
-In the options category, you can set the handles length (in frames), which is used to merge two clips if their handles touch. You can also rename the source sequence to whatever name you like.
+In the options category, you can set the handles length (in frames), which is used to merge two clips if their handles touch (it won't properly _add_ the handles to the clips, just merge clips together). You can also rename the source sequence to whatever name you like.
 
 Once you click `Create`, the sequence will be created and opened.
 
