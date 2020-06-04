@@ -3,98 +3,7 @@
 source_sequence.py
 """
 
-import tkinter as tk
 from common.python_get_resolve import GetResolve
-
-
-class Interface(tk.Frame):
-    """
-    Main window to dial settings before creating the source_sequence
-    """
-    def __init__(self, window, resolve, **kwargs):
-
-        # Init
-        tk.Frame.__init__(self, window, **kwargs)
-        self.pack(fill=tk.BOTH)
-
-        # Data
-        self.window = window
-        self.resolve = resolve
-        self.project_manager = resolve.GetProjectManager()
-        self.resolve_project = self.project_manager.GetCurrentProject()
-        self.fps = round(float(
-            self.resolve_project.GetSetting("timelineFrameRate")))
-
-        # Widgets
-        self.create_widgets()
-
-    def create_widgets(self):
-
-        self.tl_frame = tk.LabelFrame(self.window,
-                                      text="Select timelines",
-                                      padx=10,
-                                      pady=10)
-        self.tl_frame.pack(fill=tk.BOTH)
-        self.timeline_checkbox_list = []
-        for index in range(int(self.resolve_project.GetTimelineCount())):
-            timeline = self.resolve_project.GetTimelineByIndex(index + 1)
-            self.timeline_checkbox_list.append({})
-            self.timeline_checkbox_list[index]["variable"] = tk.IntVar()
-            self.timeline_checkbox_list[index]["name"] = timeline.GetName()
-            self.timeline_checkbox_list[index]["checkbox"] = tk.Checkbutton(
-                self.tl_frame,
-                variable=self.timeline_checkbox_list[index]["variable"],
-                text=timeline.GetName(),
-                width=20,
-                anchor=tk.W)
-            self.timeline_checkbox_list[index]["checkbox"].pack()
-
-        self.options_frame = tk.LabelFrame(self.window,
-                                           text="Options",
-                                           padx=10,
-                                           pady=10)
-        self.options_frame.pack(fill="both")
-        self.handles_label = tk.Label(self.options_frame,
-                                      text="Handles length")
-        self.handles_label.grid(row=0, column=0, sticky=tk.W)
-        self.handles = tk.IntVar()
-        self.handles.set(self.fps)
-        self.handles_field = tk.Entry(self.options_frame,
-                                      textvariable=self.handles,
-                                      width=30)
-        self.handles_field.grid(row=0, column=1)
-        self.tl_name_label = tk.Label(self.options_frame,
-                                      text="Source sequence name",
-                                      anchor=tk.W)
-        self.tl_name_label.grid(row=1, column=0, sticky=tk.W)
-        self.tl_name = tk.StringVar()
-        self.tl_name.set("source_sequence")
-        self.tl_name_field = tk.Entry(self.options_frame,
-                                      textvariable=self.tl_name,
-                                      width=30)
-        self.tl_name_field.grid(row=1, column=1)
-
-        self.buttons_frame = tk.Frame(self.window,
-                                      padx=10,
-                                      pady=10)
-        self.buttons_frame.pack(fill="both")
-        self.create_button = tk.Button(self.buttons_frame,
-                                       text="Create",
-                                       command=self._create_source_sequence)
-        self.create_button.pack(side=tk.LEFT)
-        self.cancel_button = tk.Button(self.buttons_frame,
-                                       text="Cancel",
-                                       command=self.master.destroy)
-        self.cancel_button.pack(side=tk.LEFT)
-
-    def _create_source_sequence(self):
-        tl_list = [tl["name"] for tl in self.timeline_checkbox_list
-                   if tl["variable"].get() == 1]
-        main(self.resolve,
-             self.tl_name.get(),
-             tl_list,
-             self.handles.get())
-        self.quit()
 
 
 def get_limelines_by_name(resolve_project, timeline_names):
@@ -266,9 +175,66 @@ def main(resolve, source_seq_name, seq_list, handle_length):
 def main_gui():
     resolve = GetResolve()
     if resolve is not None:
-        window = tk.Tk(className="Create source sequence")
-        interface = Interface(window, resolve)
-        interface.mainloop()
+        project_manager = resolve.GetProjectManager()
+        resolve_project = project_manager.GetCurrentProject()
+
+        fusion = resolve.Fusion()
+        comp = fusion.NewComp()
+        dialog_options = {}
+
+        dialog_options[1] = {1: "title_1",
+                             2: "Text",
+                             "Name": "#",
+                             "Default": "Select input timelines",
+                             "ReadOnly": True,
+                             "Lines": 1}
+
+        for index in range(int(resolve_project.GetTimelineCount())):
+            timeline = resolve_project.GetTimelineByIndex(index + 1)
+            timeline_name = timeline.GetName()
+            dialog_options[index + 2] = {1: "tl_" + timeline_name,
+                                         2: "Checkbox",
+                                         "Name": timeline_name}
+
+        dialog_options[len(dialog_options) + 1] = {
+            1: "title_2",
+            2: "Text",
+            "Name": "#",
+            "Default": "Options",
+            "ReadOnly": True,
+            "Lines": 1
+        }
+
+        fps = round(float(
+            resolve_project.GetSetting("timelineFrameRate")))
+        dialog_options[len(dialog_options) + 1] = {
+            1: "handle_length",
+            2: "Screw",
+            "Name": "Handles length",
+            "Default": fps,
+            "Min": 0,
+            "Integer": True
+        }
+
+        dialog_options[len(dialog_options) + 1] = {
+            1: "source_seq_name",
+            2: "Text",
+            "Name": "Source sequence name",
+            "Default": "source_sequence",
+            "Lines": 1
+        }
+
+        output = comp.AskUser("Create source sequence", dialog_options)
+
+        if output:
+            seq_list = [timeline[3:] for timeline in output
+                        if output[timeline] == 1.0
+                        and timeline[:3] == "tl_"]
+            main(resolve,
+                 output["source_seq_name"],
+                 seq_list,
+                 output["handle_length"])
+
     else:
         print("Cannot connect to resolve API")
         print("Please check help to solve this issue")
