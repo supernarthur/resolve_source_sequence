@@ -17,7 +17,17 @@ The use cases may be :
 
 This script requires Python 3.6.
 
-Using the GUI requires the Studio version of Resolve, version 16.2+. See below to use with the free version.
+Using the script from the workspace menu requires the Studio version of Resolve, version 16.2+. See below to use with the free version.
+
+### Script location
+
+To enable the execution of the script from the `Workspace / Scripts` menu, you need to copy the repository content to a specific location depending on your operating system.
+
+```
+MacOS:      /Library/Application Support/Blackmagic Design/DaVinci Resolve/Fusion/Scripts/Comp/
+Windows:    %APPDATA%\Blackmagic Design\DaVinci Resolve\Fusion\Scripts\Comp\
+Linux:      /opt/resolve/Fusion/Scripts/Comp/   (or /home/resolve/Fusion/Scripts/Comp/ depending on installation)
+```
 
 ### Settings in Resolve
 
@@ -30,7 +40,7 @@ Finally, save the settings, and quit Resolve for the settings to apply.
 
 ## Using the script
 
-To execute the script, make sure your Resolve project is opened, and launch `source_sequence.py` with python3.6, either via a terminal window or double clicking the script (you may need to configure the default application for .py files).
+To execute the script, open the `Workspace` menu, and navigate to `Scripts / resolve_source_sequence`and select `source_sequence.py`
 
 A settings window will open.
 
@@ -71,10 +81,7 @@ resolve = fusionscript.scriptapp("Resolve")
 Then, to use the script, type the following, replacing the parameters with the ones you want :
 
 ```python
-source_sequence.main(resolve,
-                     source_seq_name="source_sequence",
-                     seq_list=["Timeline 1", "Timeline 2", "Timeline 3"],
-                     handle_length=25)
+source_sequence.main_gui()
 ```
 
 
