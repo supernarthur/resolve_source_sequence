@@ -40,7 +40,7 @@ Finally, save the settings, and quit Resolve for the settings to apply.
 
 ## Using the script
 
-To execute the script, open the `Workspace` menu, and navigate to `Scripts / resolve_source_sequence`and select `source_sequence.py`
+To execute the script, open the `Workspace` menu, navigate to `Scripts / resolve_source_sequence` and select `source_sequence.py`
 
 A settings window will open.
 
