@@ -4,6 +4,7 @@ source_sequence.py
 """
 
 from common.python_get_resolve import GetResolve
+from warnings import warn
 
 
 def get_limelines_by_name(resolve_project, timeline_names):
@@ -46,9 +47,10 @@ def extract_tl_item_info(timeline_item):
         "media_id": unique media ID
     """
     mediapool_item = timeline_item.GetMediaPoolItem()
+    assert mediapool_item is not None
     media_id = mediapool_item.GetMediaId()
     segments = [(int(timeline_item.GetLeftOffset()),
-                 int(timeline_item.GetRightOffset()))]
+                 int(timeline_item.GetRightOffset()) - 1)]
     return {"mp_item": mediapool_item,
             "media_id": media_id,
             "segments": segments}
@@ -163,7 +165,10 @@ def create_source_sequence(resolve, name, clip_info_list):
 def main(resolve, source_seq_name, seq_list, handle_length):
     output = []
     for clip in get_tl_items(resolve, seq_list):
-        output.append(extract_tl_item_info(clip))
+        try:
+            output.append(extract_tl_item_info(clip))
+        except AssertionError:
+            warn(f"Couldn't get media information for {clip.GetName()}")
     output = compute_source_sequence(output, handle_length)
     timeline = create_source_sequence(resolve,
                                       source_seq_name,
@@ -236,7 +241,7 @@ def main_gui():
                  output["handle_length"])
 
     else:
-        print("Cannot connect to resolve API")
+        warn("Cannot connect to resolve API")
         print("Please check help to solve this issue")
 
 
